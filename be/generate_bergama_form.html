@@ -21,7 +21,10 @@
     <br>
     <h1>以下をコピーして貼り付け</h1>
     <hr>
-    <div id="output"></div>
+    <form>
+    <!-- wp:group {"layout":{"type":"constrained"}} -->
+    <textarea id="output" rows="30" cols="100"></textarea>
+    <!-- /wp:group -->
     <script>
         function escapeHtml(text) {
             const div = document.createElement("div");
@@ -33,19 +36,23 @@
             const pracs = document.getElementById("pracs").value.split(" ");
 
             const output = document.getElementById("output");
+            let urls = "";
 
             pracs.forEach((prac) => {
                 const generated = `${title}_担当${prac}`;
 
                 const url = `<!-- wp:loos/button {"hrefUrl":"https://ssl.form-mailer.jp/fms/00db3f63809293?%E3%82%BF%E3%82%A4%E3%83%88%E3%83%AB%5B0%5D=${generated}","className":"is-style-btn_normal"} -->
 <div class="swell-block-button is-style-btn_normal"><a href="https://ssl.form-mailer.jp/fms/00db3f63809293?%E3%82%BF%E3%82%A4%E3%83%88%E3%83%AB%5B0%5D=${generated}" class="swell-block-button__link"><span>${prac}</span></a></div>
-<!-- /wp:loos/button -->\n`;
+<!-- /wp:loos/button -->`;
 
                 const escapedUrl = escapeHtml(url);
-                output.innerHTML += escapedUrl + "<br>";
+                urls += escapedUrl + "\n";
             });
+
+            output.innerHTML = urls;
         }
     </script>
+    </form>
     </div>
 </body>
 </html>
