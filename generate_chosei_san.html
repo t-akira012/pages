@@ -12,7 +12,7 @@
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            width: 300px;
+            width: 800px;
             text-align: center;
         }
         .input-container {
@@ -24,7 +24,7 @@
         }
         .schedule textarea {
             width: 100%;
-            height: 300px;
+            height: 900px;
             margin-top: 10px;
             font-family: Arial, sans-serif;
         }
@@ -35,7 +35,13 @@
         <label for="year">年:</label>
         <input type="number" id="year" value="2024">
         <label for="month">月:</label>
-        <input type="number" id="month" value="8">
+        <input type="number" id="month" value="8"><br>
+        <label for="weekday-time">平日の開始時間:</label>
+        <input type="time" id="weekday-time" value="20:00">
+        <label for="weekend-times">週末の開始時間:</label>
+        <input type="time" id="weekend-time1" value="10:00">
+        <input type="time" id="weekend-time2" value="14:00">
+        <input type="time" id="weekend-time3" value="20:00"><br>
         <button onclick="updateSchedule()">更新</button>
     </div>
 
@@ -45,7 +51,7 @@
     </div>
 
     <script>
-        function getSchedule(year, month) {
+        function getSchedule(year, month, weekdayTime, weekendTimes) {
             const japaneseWeekdays = ["月", "火", "水", "木", "金", "土", "日"];
             const schedule = [];
             const daysInMonth = new Date(year, month, 0).getDate();  // Get the number of days in the given month
@@ -56,18 +62,18 @@
                 const dayName = japaneseWeekdays[weekday === 0 ? 6 : weekday - 1];  // Get the Japanese weekday name
                 
                 if (weekday >= 1 && weekday <= 5) {  // Monday to Friday
-                    schedule.push(`${month}/${day}(${dayName}) 20:00〜`);
+                    schedule.push(`${month}/${day}(${dayName}) ${weekdayTime}〜`);
                 } else {  // Saturday and Sunday
-                    schedule.push(`${month}/${day}(${dayName}) 10:00〜`);
-                    schedule.push(`${month}/${day}(${dayName}) 14:00〜`);
-                    schedule.push(`${month}/${day}(${dayName}) 20:00〜`);
+                    weekendTimes.forEach(time => {
+                        schedule.push(`${month}/${day}(${dayName}) ${time}〜`);
+                    });
                 }
             }
             return schedule.join('\n');
         }
 
-        function displaySchedule(year, month) {
-            const schedule = getSchedule(year, month);
+        function displaySchedule(year, month, weekdayTime, weekendTimes) {
+            const schedule = getSchedule(year, month, weekdayTime, weekendTimes);
             const scheduleText = document.getElementById("schedule-text");
             scheduleText.value = schedule;
         }
@@ -75,7 +81,12 @@
         function updateSchedule() {
             const year = document.getElementById("year").value;
             const month = document.getElementById("month").value;
-            displaySchedule(year, month);
+            const weekdayTime = document.getElementById("weekday-time").value;
+            const weekendTime1 = document.getElementById("weekend-time1").value;
+            const weekendTime2 = document.getElementById("weekend-time2").value;
+            const weekendTime3 = document.getElementById("weekend-time3").value;
+            const weekendTimes = [weekendTime1, weekendTime2, weekendTime3];
+            displaySchedule(year, month, weekdayTime, weekendTimes);
         }
 
         // Initial display with default values
