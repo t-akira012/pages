@@ -178,6 +178,52 @@
             font-size: 14px;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
+
+        /* 曜日選択部分のスタイル */
+        .weekday-selector {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .weekday-selector h3 {
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .weekday-buttons {
+            display: flex;
+            gap: 4px;
+            justify-content: space-between;
+        }
+
+        .weekday-checkbox {
+            display: none;
+        }
+
+        .weekday-label {
+            flex: 1;
+            min-width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            font-weight: bold;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .weekday-checkbox:checked + .weekday-label {
+            background: #2196F3;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -187,6 +233,26 @@
             <input type="number" id="year" inputmode="numeric">
             <label for="month">月:</label>
             <input type="number" id="month" inputmode="numeric">
+        </div>
+
+        <div class="weekday-selector">
+            <h3>曜日選択</h3>
+            <div class="weekday-buttons">
+                <input type="checkbox" id="day-mon" class="weekday-checkbox" value="1" checked>
+                <label for="day-mon" class="weekday-label">月</label>
+                <input type="checkbox" id="day-tue" class="weekday-checkbox" value="2" checked>
+                <label for="day-tue" class="weekday-label">火</label>
+                <input type="checkbox" id="day-wed" class="weekday-checkbox" value="3" checked>
+                <label for="day-wed" class="weekday-label">水</label>
+                <input type="checkbox" id="day-thu" class="weekday-checkbox" value="4" checked>
+                <label for="day-thu" class="weekday-label">木</label>
+                <input type="checkbox" id="day-fri" class="weekday-checkbox" value="5" checked>
+                <label for="day-fri" class="weekday-label">金</label>
+                <input type="checkbox" id="day-sat" class="weekday-checkbox" value="6" checked>
+                <label for="day-sat" class="weekday-label">土</label>
+                <input type="checkbox" id="day-sun" class="weekday-checkbox" value="0" checked>
+                <label for="day-sun" class="weekday-label">日</label>
+            </div>
         </div>
         
         <div class="time-inputs">
@@ -272,19 +338,25 @@
             const schedule = [];
             const daysInMonth = new Date(year, month, 0).getDate();
             
+            // 選択された曜日を取得
+            const selectedWeekdays = Array.from(document.querySelectorAll('.weekday-checkbox:checked')).map(cb => parseInt(cb.value));
+            
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month - 1, day);
-                const weekday = date.getDay();
+                const weekday = date.getDay(); // 0-6
                 const dayName = japaneseWeekdays[weekday === 0 ? 6 : weekday - 1];
                 
-                if (weekday >= 1 && weekday <= 5) {
-                    weekdayTimes.forEach(time => {
-                        schedule.push(`${month}/${day}(${dayName}) ${time}〜`);
-                    });
-                } else {
-                    weekendTimes.forEach(time => {
-                        schedule.push(`${month}/${day}(${dayName}) ${time}〜`);
-                    });
+                // 選択された曜日のみスケジュールに追加
+                if (selectedWeekdays.includes(weekday)) {
+                    if (weekday >= 1 && weekday <= 5) {
+                        weekdayTimes.forEach(time => {
+                            schedule.push(`${month}/${day}(${dayName}) ${time}〜`);
+                        });
+                    } else {
+                        weekendTimes.forEach(time => {
+                            schedule.push(`${month}/${day}(${dayName}) ${time}〜`);
+                        });
+                    }
                 }
             }
             return schedule.join('\n');
