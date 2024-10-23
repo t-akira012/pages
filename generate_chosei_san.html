@@ -28,6 +28,38 @@
             margin-top: 10px;
             font-family: Arial, sans-serif;
         }
+        .time-inputs {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+        .time-input-group {
+            display: inline-block;
+            margin: 5px;
+        }
+        .remove-time {
+            margin-left: 5px;
+            color: red;
+            cursor: pointer;
+        }
+        .add-time-btn {
+            margin: 5px;
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .add-time-btn:hover {
+            background-color: #45a049;
+        }
+        .empty-message {
+            color: #666;
+            font-style: italic;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -35,13 +67,44 @@
         <label for="year">年:</label>
         <input type="number" id="year">
         <label for="month">月:</label>
-        <input type="number" id="month"><br>
-        <label for="weekday-time">平日の開始時間:</label>
-        <input type="time" id="weekday-time" value="20:00">
-        <label for="weekend-times">週末の開始時間:</label>
-        <input type="time" id="weekend-time1" value="10:00">
-        <input type="time" id="weekend-time2" value="14:00">
-        <input type="time" id="weekend-time3" value="20:00"><br>
+        <input type="number" id="month">
+        
+        <div class="time-inputs">
+            <h3>平日の時間</h3>
+            <div id="weekday-times">
+                <div class="time-input-group">
+                    <input type="time" value="20:00">
+                    <span class="remove-time" onclick="removeTime(this)">×</span>
+                </div>
+            </div>
+            <div id="weekday-empty" class="empty-message" style="display: none;">
+                時間が設定されていません
+            </div>
+            <button class="add-time-btn" onclick="addTime('weekday')">時間を追加</button>
+        </div>
+
+        <div class="time-inputs">
+            <h3>休日の時間</h3>
+            <div id="weekend-times">
+                <div class="time-input-group">
+                    <input type="time" value="10:00">
+                    <span class="remove-time" onclick="removeTime(this)">×</span>
+                </div>
+                <div class="time-input-group">
+                    <input type="time" value="14:00">
+                    <span class="remove-time" onclick="removeTime(this)">×</span>
+                </div>
+                <div class="time-input-group">
+                    <input type="time" value="20:00">
+                    <span class="remove-time" onclick="removeTime(this)">×</span>
+                </div>
+            </div>
+            <div id="weekend-empty" class="empty-message" style="display: none;">
+                時間が設定されていません
+            </div>
+            <button class="add-time-btn" onclick="addTime('weekend')">時間を追加</button>
+        </div>
+
         <button onclick="updateSchedule()">更新</button>
         <button onclick="copyToClipboard()">コピー</button>
     </div>
@@ -52,18 +115,47 @@
     </div>
 
     <script>
-        function getSchedule(year, month, weekdayTime, weekendTimes) {
+        function addTime(type) {
+            const container = document.getElementById(`${type}-times`);
+            const emptyMessage = document.getElementById(`${type}-empty`);
+            const newTimeGroup = document.createElement('div');
+            newTimeGroup.className = 'time-input-group';
+            newTimeGroup.innerHTML = `
+                <input type="time" value="00:00">
+                <span class="remove-time" onclick="removeTime(this)">×</span>
+            `;
+            container.appendChild(newTimeGroup);
+            emptyMessage.style.display = 'none';
+        }
+
+        function removeTime(element) {
+            const timeGroup = element.parentElement;
+            const container = timeGroup.parentElement;
+            const type = container.id.split('-')[0]; // 'weekday' or 'weekend'
+            const emptyMessage = document.getElementById(`${type}-empty`);
+            
+            timeGroup.remove();
+            
+            // 時間入力欄がすべて削除された場合、メッセージを表示
+            if (container.children.length === 0) {
+                emptyMessage.style.display = 'block';
+            }
+        }
+
+        function getSchedule(year, month, weekdayTimes, weekendTimes) {
             const japaneseWeekdays = ["月", "火", "水", "木", "金", "土", "日"];
             const schedule = [];
-            const daysInMonth = new Date(year, month, 0).getDate();  // Get the number of days in the given month
+            const daysInMonth = new Date(year, month, 0).getDate();
             
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month - 1, day);
                 const weekday = date.getDay();
-                const dayName = japaneseWeekdays[weekday === 0 ? 6 : weekday - 1];  // Get the Japanese weekday name
+                const dayName = japaneseWeekdays[weekday === 0 ? 6 : weekday - 1];
                 
                 if (weekday >= 1 && weekday <= 5) {  // Monday to Friday
-                    schedule.push(`${month}/${day}(${dayName}) ${weekdayTime}〜`);
+                    weekdayTimes.forEach(time => {
+                        schedule.push(`${month}/${day}(${dayName}) ${time}〜`);
+                    });
                 } else {  // Saturday and Sunday
                     weekendTimes.forEach(time => {
                         schedule.push(`${month}/${day}(${dayName}) ${time}〜`);
@@ -73,21 +165,20 @@
             return schedule.join('\n');
         }
 
-        function displaySchedule(year, month, weekdayTime, weekendTimes) {
-            const schedule = getSchedule(year, month, weekdayTime, weekendTimes);
-            const scheduleText = document.getElementById("schedule-text");
-            scheduleText.value = schedule;
+        function getTimesFromInputs(type) {
+            const container = document.getElementById(`${type}-times`);
+            const timeInputs = container.getElementsByTagName('input');
+            return Array.from(timeInputs).map(input => input.value);
         }
 
         function updateSchedule() {
             const year = document.getElementById("year").value;
             const month = document.getElementById("month").value;
-            const weekdayTime = document.getElementById("weekday-time").value;
-            const weekendTime1 = document.getElementById("weekend-time1").value;
-            const weekendTime2 = document.getElementById("weekend-time2").value;
-            const weekendTime3 = document.getElementById("weekend-time3").value;
-            const weekendTimes = [weekendTime1, weekendTime2, weekendTime3];
-            displaySchedule(year, month, weekdayTime, weekendTimes);
+            const weekdayTimes = getTimesFromInputs('weekday');
+            const weekendTimes = getTimesFromInputs('weekend');
+            
+            const schedule = getSchedule(year, month, weekdayTimes, weekendTimes);
+            document.getElementById("schedule-text").value = schedule;
         }
 
         function copyToClipboard() {
@@ -97,7 +188,6 @@
             alert("スケジュールがクリップボードにコピーされました。");
         }
 
-        // Set initial values to the current year and month
         window.onload = function() {
             const now = new Date();
             document.getElementById("year").value = now.getFullYear();
