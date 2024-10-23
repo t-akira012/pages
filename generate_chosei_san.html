@@ -114,6 +114,22 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        .jmp-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #8888ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            min-height: 44px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .jmp-btn a {
+            color: white;
+        }
+
         .action-buttons {
             display: flex;
             gap: 8px;
@@ -218,6 +234,10 @@
     <div class="schedule">
         <h2>スケジュール ※祝日は未対応です</h2>
         <textarea id="schedule-text" readonly></textarea>
+
+      <div>
+        <button class="jmp-btn" ><a href="https://chouseisan.com/">調整さんにアクセス</a></button>
+      </div>
     </div>
 
     <script>
